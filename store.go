@@ -65,6 +65,12 @@ func (s *Store) SetMyInfo(info *MyInfo) error {
 	return s.db.Save(info)
 }
 
+func (s *Store) GetMyInfo(myId uuid.UUID) (myInfo MyInfo, myErr error) {
+	var tmp MyInfo
+	err := s.db.One("UserID", myId, &tmp)
+	return tmp, err
+}
+
 func (s *Store) UpdateLocation(myID uuid.UUID, newLat float64, newLong float64) error {
 	var myInfo MyInfo
 	err := s.db.One("UserID", myID, &myInfo)

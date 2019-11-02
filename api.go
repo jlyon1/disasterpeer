@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -19,13 +20,13 @@ type API struct {
 }
 
 // NewServer ...
-func NewServer(url string, port string, uuid uuid.UUID) *API {
+func NewServer(url string, port string, uuid uuid.UUID, s *Store) *API {
 	api := API{}
 	api.router = chi.NewRouter()
 	api.listenURL = url
 	api.port = port
 	api.UUID = uuid
-
+	api.s = s
 	api.router.Get("/", api.IndexHandler)
 	api.router.Get("/app.js", api.ScriptHandler)
 	api.router.Get("/uuid", api.GetUUID)
@@ -52,7 +53,9 @@ func (a *API) GetUUID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) GetMyInfo(w http.ResponseWriter, r *http.Request) {
+	x, _ := a.s.GetMyInfo(a.UUID)
 
+	WriteJSON(w, x)
 }
 
 func (a *API) PostMyInfo(w http.ResponseWriter, r *http.Request) {
@@ -69,3 +72,14 @@ func (a *API) Serve() {
 
 // func (a *API) GetMessageHandler() []byte {
 // }
+// WriteJSON writes the data as JSON.
+func WriteJSON(w http.ResponseWriter, data interface{}) error {
+	w.Header().Set("Content-Type", "application/json")
+	b, err := json.MarshalIndent(data, "", " ")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	w.Write(b)
+	return nil
+}
