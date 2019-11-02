@@ -88,7 +88,6 @@ func (s *Store) UpdateLocation(myID uuid.UUID, newLat float64, newLong float64) 
 	}
 
 	return s.db.Save(&newInfo)
-
 }
 
 type EncryptedMessage struct {
@@ -113,10 +112,24 @@ func (s *Store) SaveMessages(msg []byte) {
 	}
 }
 
-func (s *Store) GetAllMessages(myID uuid.UUID) []EncryptedMessage {
-	// Get all existing messages
-	var messages []EncryptedMessage
-	err := s.db.All(&messages)
+// func (s *Store) ViewMessages() {
+// 	var messages []EncryptedMessage
+// 	err := s.db.All(&messages)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 	}
+
+// 	fmt.Println(messages)
+// 	fmt.Println(len(messages))
+
+// 	// for _, m := range messages {
+// 	// 	fmt.Println(m.ID)
+// 	// 	fmt.Println(m.Body) + "\n")
+// 	// }
+
+// }
+
+func (s *Store) GetAllMessages(myID uuid.UUID) []byte {
 
 	// Append user's most recent info onto encrypted messages
 	rng := rand.Reader
@@ -137,9 +150,11 @@ func (s *Store) GetAllMessages(myID uuid.UUID) []EncryptedMessage {
 		fmt.Println("Unable to parse RSA public key")
 	}
 
+	// Get all entries in MyInfo
 	var info []MyInfo
 	s.db.All(&info)
 
+	// Save those to EncryptedMessages
 	for _, myInfo := range info {
 		bodyString, err := json.Marshal(&myInfo)
 
@@ -155,8 +170,18 @@ func (s *Store) GetAllMessages(myID uuid.UUID) []EncryptedMessage {
 			Sent: time.Now(),
 			Body: body,
 		}
-		messages = append(messages, newMessage)
+		s.db.Save(&newMessage)
 	}
 
-	return messages
+	// Get all existing messages
+	var messages []EncryptedMessage
+	err = s.db.All(&messages)
+
+	// Marshal messages
+	bytes, err := json.Marshal(messages)
+	if err != nil {
+		log.Panicln("couldn't marshal messages")
+	}
+
+	return bytes
 }
