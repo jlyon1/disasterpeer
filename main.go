@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	log "github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -39,7 +38,8 @@ func main() {
 	s.SetMyInfo(&myInfo)
 
 	a := NewServer("0.0.0.0", port, id, s)
-
+	// s.SetMyInfo(&myInfo)
+	// s.UpdateLocation(id, 100, 100)
 	portInt, _ := strconv.Atoi(port)
 	fmt.Println("port", portInt)
 
@@ -53,37 +53,5 @@ func main() {
 			log.Info(peer)
 		}
 	}
-
-	// s, err := NewStore()
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	fmt.Println("couldn't create store")
-	// }
-
-	// myInfo := MyInfo{
-	// 	ID:    id,
-	// 	Name:  "Grace Roller",
-	// 	Email: "gracearoller@gmail.com",
-	// 	Phone: "7247993419",
-	// 	Lat:   75.5,
-	// 	Long:  75.5,
-	// 	Time:  time.Now(),
-	// 	// Meta: ,
-	// }
-	// // fmt.Println(myInfo)
-
-	// //
-	// s.SetMyInfo(&myInfo)
-	// fmt.Println("Get messages: ")
-	// fmt.Println(string(s.GetAllMessages(id)))
-
-	// s.UpdateLocation(id, 100, 100)
-	// fmt.Println("Get messages after update: ")
-	// fmt.Println(string(s.GetAllMessages(id)))
-
-	// fmt.Println("Get messages after save messages: ")
-	// s.UpdateLocation(id, 200, 200)
-	// s.SaveMessages(s.GetAllMessages(id))
-	// fmt.Println(string(s.GetAllMessages(id)))
 
 }

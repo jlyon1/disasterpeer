@@ -78,8 +78,6 @@ func (s *Store) UpdateLocation(myID uuid.UUID, newLat float64, newLong float64) 
 		fmt.Println(err)
 	}
 
-	// fmt.Println(myInfo)
-
 	newInfo := MyInfo{
 		UserID: myInfo.UserID,
 		Name:   myInfo.Name,
@@ -137,7 +135,7 @@ func (s *Store) GetAllMessages(myID uuid.UUID) []byte {
 	var pubKey *rsa.PublicKey
 	var ok bool
 	if pubKey, ok = parsedKey.(*rsa.PublicKey); !ok {
-		log.Panicln("Unable to parse RSA public key, generating a temp one")
+		fmt.Println("Unable to parse RSA public key")
 	}
 
 	var info []MyInfo
@@ -150,7 +148,11 @@ func (s *Store) GetAllMessages(myID uuid.UUID) []byte {
 		if err != nil {
 			fmt.Println(err)
 		}
-		body, _ := rsa.EncryptOAEP(sha256.New(), rng, pubKey, bodyString, []byte(myID.String()))
+		body, err := rsa.EncryptOAEP(sha256.New(), rng, pubKey, bodyString, []byte(myID.String()))
+		if err != nil {
+			fmt.Println(err)
+		}
+
 		newMessage := EncryptedMessage{
 			Sent: time.Now(),
 			Body: body,

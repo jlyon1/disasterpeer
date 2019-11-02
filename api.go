@@ -31,6 +31,7 @@ func NewServer(url string, port string, uuid uuid.UUID, s *Store) *API {
 	api.router.Get("/app.js", api.ScriptHandler)
 	api.router.Get("/uuid", api.GetUUID)
 	api.router.Get("/info", api.GetMyInfo)
+	api.router.Get("/messages", api.GetAllMessages)
 	api.router.Post("/info", api.PostMyInfo)
 
 	return &api
@@ -44,6 +45,12 @@ func (a *API) IndexHandler(w http.ResponseWriter, r *http.Request) {
 // ScriptHandler ...
 func (a *API) ScriptHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "static/app.js")
+}
+
+func (a *API) GetAllMessages(w http.ResponseWriter, r *http.Request) {
+	x := a.s.GetAllMessages(a.UUID)
+
+	WriteJSON(w, x)
 }
 
 // GetUUID ...
