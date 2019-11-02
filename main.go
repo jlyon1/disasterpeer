@@ -1,7 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"strconv"
 	"time"
@@ -49,10 +52,36 @@ func main() {
 	peerChan := make(chan Peer)
 	go FindPeers(peerChan)
 	go a.Serve()
+	var peerList []Peer
 	for {
 		select {
 		case peer := <-peerChan:
-			log.Info(peer)
+			peerList = append(peerList, peer)
+		case <-time.Tick(time.Second):
+			var npl []Peer
+			for _, p := range peerList {
+				resp, err := http.Get("http://" + p.IP + ":" + strconv.Itoa(p.Port) + "/messages")
+
+				if err != nil {
+					log.Error("Could not connect to peer", p.IP)
+					log.Error(err)
+				} else {
+					defer resp.Body.Close()
+
+					if resp.StatusCode == http.StatusOK {
+						bodyBytes, err := ioutil.ReadAll(resp.Body)
+						if err != nil {
+							log.Fatal(err)
+						}
+						npl = append(npl, p)
+						var encMessages []EncryptedMessage
+						json.Unmarshal(bodyBytes, &encMessages)
+						fmt.Println("Got ", len(encMessages), " Messages")
+
+					}
+				}
+			}
+			peerList = npl
 		}
 	}
 

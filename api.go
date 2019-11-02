@@ -74,7 +74,6 @@ func (a *API) PostMyInfo(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(500)
 		return
 	}
-	fmt.Println(tmp)
 	err = a.s.SetMyInfo(&MyInfo{
 		UserID: a.UUID,
 		Name:   tmp.Name,

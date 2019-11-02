@@ -20,8 +20,15 @@ new Vue({
         console.log(val);
         this.uuid = val;
       });
+      this.getInfo()
+      this.getAllMessages()
   },
   methods: {
+    getAllMessages(){
+      fetch("/messages").then((data) => data.json()).then((val) => {
+        this.messagesSaved = val.length
+      })
+    },
     postInfo() {
       fetch("/info", {
         method: 'POST',
@@ -30,6 +37,13 @@ new Vue({
           email: this.email,
           phone: this.phone
         })
+      });
+    },
+    getInfo() {
+      fetch("/info").then((data)=> data.json()).then((val) => {
+        this.name = val.Name;
+        this.email = val.Email;
+        this.phone = val.Phone;
       });
     }
   }

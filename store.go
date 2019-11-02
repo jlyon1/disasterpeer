@@ -62,14 +62,12 @@ type MyInfo struct {
 }
 
 func (s *Store) SetMyInfo(info *MyInfo) error {
-	fmt.Println(info)
 	return s.db.Save(info)
 }
 
 func (s *Store) GetMyInfo(myId uuid.UUID) (myInfo MyInfo, myErr error) {
 	var tmp []MyInfo
 	err := s.db.Find("UserID", myId, &tmp, storm.Reverse())
-	fmt.Println(err)
 	return tmp[0], err
 }
 
@@ -144,7 +142,6 @@ func (s *Store) GetAllMessages(myID uuid.UUID) []EncryptedMessage {
 
 	for _, myInfo := range info {
 		bodyString, err := json.Marshal(&myInfo)
-		fmt.Println(string(bodyString))
 
 		if err != nil {
 			fmt.Println(err)
