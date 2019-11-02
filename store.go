@@ -61,8 +61,43 @@ type MyInfo struct {
 	// Meta  MetaImages
 }
 
-func (s *Store) SetMyInfo(info *MyInfo) error {
-	return s.db.Save(info)
+func (s *Store) SetMyInfo(newInfo *MyInfo) error {
+
+	// Append user's most recent info onto encrypted messages
+	rng := rand.Reader
+	pub, err := ioutil.ReadFile("mykey.pub")
+	if err != nil {
+		fmt.Println(err)
+	}
+	pubPem, _ := pem.Decode(pub)
+	if pubPem == nil {
+		fmt.Println("bad")
+	}
+
+	parsedKey, err := x509.ParsePKIXPublicKey(pubPem.Bytes)
+
+	var pubKey *rsa.PublicKey
+	var ok bool
+	if pubKey, ok = parsedKey.(*rsa.PublicKey); !ok {
+		fmt.Println("Unable to parse RSA public key")
+	}
+
+	bodyString, err := json.Marshal(&newInfo)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	body, err := rsa.EncryptOAEP(sha512.New(), rng, pubKey, bodyString, nil)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	newMessage := EncryptedMessage{
+		Sent: time.Now(),
+		Body: body,
+	}
+	s.db.Save(&newMessage)
+	return s.db.Save(newInfo)
 }
 
 func (s *Store) GetMyInfo(myId uuid.UUID) (myInfo MyInfo, myErr error) {
@@ -77,7 +112,7 @@ func (s *Store) UpdateLocation(myID uuid.UUID, newLat float64, newLong float64) 
 		fmt.Println(err)
 	}
 
-	newInfo := MyInfo{
+	newInfo := &MyInfo{
 		UserID: myInfo.UserID,
 		Name:   myInfo.Name,
 		Email:  myInfo.Email,
@@ -87,7 +122,7 @@ func (s *Store) UpdateLocation(myID uuid.UUID, newLat float64, newLong float64) 
 		Time:   time.Now(),
 	}
 
-	return s.db.Save(&newInfo)
+	return s.SetMyInfo(newInfo)
 }
 
 type EncryptedMessage struct {
@@ -129,59 +164,10 @@ func (s *Store) SaveMessages(msg []byte) {
 
 // }
 
-func (s *Store) GetAllMessages(myID uuid.UUID) []byte {
-
-	// Append user's most recent info onto encrypted messages
-	rng := rand.Reader
-	pub, err := ioutil.ReadFile("mykey.pub")
-	if err != nil {
-		fmt.Println(err)
-	}
-	pubPem, _ := pem.Decode(pub)
-	if pubPem == nil {
-		fmt.Println("bad")
-	}
-
-	parsedKey, err := x509.ParsePKIXPublicKey(pubPem.Bytes)
-
-	var pubKey *rsa.PublicKey
-	var ok bool
-	if pubKey, ok = parsedKey.(*rsa.PublicKey); !ok {
-		fmt.Println("Unable to parse RSA public key")
-	}
-
-	// Get all entries in MyInfo
-	var info []MyInfo
-	s.db.All(&info)
-
-	// Save those to EncryptedMessages
-	for _, myInfo := range info {
-		bodyString, err := json.Marshal(&myInfo)
-
-		if err != nil {
-			fmt.Println(err)
-		}
-		body, err := rsa.EncryptOAEP(sha512.New(), rng, pubKey, bodyString, nil)
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		newMessage := EncryptedMessage{
-			Sent: time.Now(),
-			Body: body,
-		}
-		s.db.Save(&newMessage)
-	}
+func (s *Store) GetAllMessages(myID uuid.UUID) []EncryptedMessage {
 
 	// Get all existing messages
 	var messages []EncryptedMessage
-	err = s.db.All(&messages)
-
-	// Marshal messages
-	bytes, err := json.Marshal(messages)
-	if err != nil {
-		log.Panicln("couldn't marshal messages")
-	}
-
-	return bytes
+	s.db.All(&messages)
+	return messages
 }
