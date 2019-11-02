@@ -3,7 +3,7 @@ package main
 import (
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/sha256"
+	"crypto/sha512"
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
@@ -20,8 +20,8 @@ type Store struct {
 	db *storm.DB
 }
 
-func NewStore() (*Store, error) {
-	db, err := storm.Open("disaster.db")
+func NewStore(name string) (*Store, error) {
+	db, err := storm.Open(name)
 	if err != nil {
 		fmt.Println("open error")
 		return nil, err
@@ -62,18 +62,19 @@ type MyInfo struct {
 }
 
 func (s *Store) SetMyInfo(info *MyInfo) error {
+	fmt.Println(info)
 	return s.db.Save(info)
 }
 
 func (s *Store) GetMyInfo(myId uuid.UUID) (myInfo MyInfo, myErr error) {
-	var tmp MyInfo
-	err := s.db.One("UserID", myId, &tmp)
-	return tmp, err
+	var tmp []MyInfo
+	err := s.db.Find("UserID", myId, &tmp, storm.Reverse())
+	fmt.Println(err)
+	return tmp[0], err
 }
 
 func (s *Store) UpdateLocation(myID uuid.UUID, newLat float64, newLong float64) error {
-	var myInfo MyInfo
-	err := s.db.One("UserID", myID, &myInfo)
+	myInfo, err := s.GetMyInfo(myID)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -114,14 +115,14 @@ func (s *Store) SaveMessages(msg []byte) {
 	}
 }
 
-func (s *Store) GetAllMessages(myID uuid.UUID) []byte {
+func (s *Store) GetAllMessages(myID uuid.UUID) []EncryptedMessage {
 	// Get all existing messages
 	var messages []EncryptedMessage
 	err := s.db.All(&messages)
 
 	// Append user's most recent info onto encrypted messages
 	rng := rand.Reader
-	pub, err := ioutil.ReadFile("key.pem")
+	pub, err := ioutil.ReadFile("mykey.pub")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -148,7 +149,7 @@ func (s *Store) GetAllMessages(myID uuid.UUID) []byte {
 		if err != nil {
 			fmt.Println(err)
 		}
-		body, err := rsa.EncryptOAEP(sha256.New(), rng, pubKey, bodyString, []byte(myID.String()))
+		body, err := rsa.EncryptOAEP(sha512.New(), rng, pubKey, bodyString, nil)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -160,11 +161,5 @@ func (s *Store) GetAllMessages(myID uuid.UUID) []byte {
 		messages = append(messages, newMessage)
 	}
 
-	// Marshal messages
-	bytes, err := json.Marshal(messages)
-	if err != nil {
-		log.Panicln("couldn't marshal messages")
-	}
-
-	return bytes
+	return messages
 }

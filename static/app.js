@@ -6,9 +6,9 @@ new Vue({
       message: "hello",
       uuid: "",
       messagesSaved: 0,
-      name: "",
-      email: "",
-      phone: ""
+      name: "me",
+      email: "me@example.com",
+      phone: "555 555 5555"
     };
   },
   mounted() {

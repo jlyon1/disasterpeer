@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -61,12 +63,30 @@ func (a *API) GetUUID(w http.ResponseWriter, r *http.Request) {
 
 func (a *API) GetMyInfo(w http.ResponseWriter, r *http.Request) {
 	x, _ := a.s.GetMyInfo(a.UUID)
-
 	WriteJSON(w, x)
 }
 
 func (a *API) PostMyInfo(w http.ResponseWriter, r *http.Request) {
-
+	dec := json.NewDecoder(r.Body)
+	var tmp MyInfo
+	err := dec.Decode(&tmp)
+	if err != nil {
+		w.WriteHeader(500)
+		return
+	}
+	fmt.Println(tmp)
+	err = a.s.SetMyInfo(&MyInfo{
+		UserID: a.UUID,
+		Name:   tmp.Name,
+		Email:  tmp.Email,
+		Phone:  tmp.Phone,
+		Lat:    tmp.Lat,
+		Long:   tmp.Long,
+		Time:   time.Now(),
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 
 // Serve ...

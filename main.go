@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -17,31 +18,32 @@ func main() {
 		port = "8080"
 	}
 
+	dbname := os.Getenv("DBNAME")
+	if dbname == "" {
+		dbname = "disaster.db"
+	}
+
 	id := uuid.New()
 
-	myInfo := MyInfo{
-		ID:     0,
-		UserID: id,
-		Name:   "Grace asdfRoller",
-		Email:  "gracearoller@gmail.com",
-		Phone:  "7247993419",
-		Lat:    75.5,
-		Long:   75.5,
-		Time:   time.Now(),
-		// Meta: ,
-	}
-	s, err := NewStore()
+	s, err := NewStore(dbname)
 	if err != nil {
 		fmt.Println(err)
 		fmt.Println("couldn't create store")
 	}
-	s.SetMyInfo(&myInfo)
 
+	tmp := MyInfo{
+		UserID: id,
+		Name:   "me1",
+		Email:  "me@example.com",
+		Phone:  "(555) 555 5555",
+		Lat:    -1,
+		Long:   -1,
+		Time:   time.Now(),
+	}
+	s.SetMyInfo(&tmp)
 	a := NewServer("0.0.0.0", port, id, s)
-	// s.SetMyInfo(&myInfo)
-	// s.UpdateLocation(id, 100, 100)
+
 	portInt, _ := strconv.Atoi(port)
-	fmt.Println("port", portInt)
 
 	go RegisterService(id, portInt)
 	peerChan := make(chan Peer)
