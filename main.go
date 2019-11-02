@@ -2,69 +2,66 @@ package main
 
 import (
 	"fmt"
-	"time"
+	"os"
+	"strconv"
 
 	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
 	// Discover all services on the network (e.g. _workstation._tcp)
-	// resolver, err := zeroconf.NewResolver(nil)
-	// if err != nil {
-	// 	log.Fatalln("Failed to initialize resolver:", err.Error())
-	// }
 
-	// entries := make(chan *zeroconf.ServiceEntry)
-	// go func(results <-chan *zeroconf.ServiceEntry) {
-	// 	for entry := range results {
-	// 		log.Println(entry.HostName)
-	// 	}
-	// 	log.Println("No more entries.")
-	// }(entries)
-
-	// ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
-	// defer cancel()
-	// err = resolver.Browse(ctx, "_workstation._tcp", "local.", entries)
-	// if err != nil {
-	// 	log.Fatalln("Failed to browse:", err.Error())
-	// }
-
-	// <-ctx.Done()
-
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 	id := uuid.New()
-	// a := NewServer("0.0.0.0:8080", id)
-	// a.Serve()
+	a := NewServer("0.0.0.0", port, id)
 
-	s, err := NewStore()
-	if err != nil {
-		fmt.Println(err)
-		fmt.Println("couldn't create store")
+	portInt, _ := strconv.Atoi(port)
+	fmt.Println("port", portInt)
+	go RegisterService(id, portInt)
+	peerChan := make(chan Peer)
+	go FindPeers(peerChan)
+	go a.Serve()
+	for {
+		select {
+		case peer := <-peerChan:
+			log.Info(peer)
+		}
 	}
 
-	myInfo := MyInfo{
-		ID:    id,
-		Name:  "Grace Roller",
-		Email: "gracearoller@gmail.com",
-		Phone: "7247993419",
-		Lat:   75.5,
-		Long:  75.5,
-		Time:  time.Now(),
-		// Meta: ,
-	}
-	// fmt.Println(myInfo)
+	// s, err := NewStore()
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	fmt.Println("couldn't create store")
+	// }
 
-	//
-	s.SetMyInfo(&myInfo)
-	fmt.Println("Get messages: ")
-	fmt.Println(string(s.GetAllMessages(id)))
+	// myInfo := MyInfo{
+	// 	ID:    id,
+	// 	Name:  "Grace Roller",
+	// 	Email: "gracearoller@gmail.com",
+	// 	Phone: "7247993419",
+	// 	Lat:   75.5,
+	// 	Long:  75.5,
+	// 	Time:  time.Now(),
+	// 	// Meta: ,
+	// }
+	// // fmt.Println(myInfo)
 
-	s.UpdateLocation(id, 100, 100)
-	fmt.Println("Get messages after update: ")
-	fmt.Println(string(s.GetAllMessages(id)))
+	// //
+	// s.SetMyInfo(&myInfo)
+	// fmt.Println("Get messages: ")
+	// fmt.Println(string(s.GetAllMessages(id)))
 
-	fmt.Println("Get messages after save messages: ")
-	s.UpdateLocation(id, 200, 200)
-	s.SaveMessages(s.GetAllMessages(id))
-	fmt.Println(string(s.GetAllMessages(id)))
+	// s.UpdateLocation(id, 100, 100)
+	// fmt.Println("Get messages after update: ")
+	// fmt.Println(string(s.GetAllMessages(id)))
+
+	// fmt.Println("Get messages after save messages: ")
+	// s.UpdateLocation(id, 200, 200)
+	// s.SaveMessages(s.GetAllMessages(id))
+	// fmt.Println(string(s.GetAllMessages(id)))
 
 }
