@@ -1,5 +1,60 @@
 <html>
+    <head>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.5/css/bulma.min.css"></link>
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    </head>
     <body>
-        hi
+        <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+            <div class="navbar-brand">
+                <a class="navbar-item">
+                <p class="title has-text-white">Disasterpeer</p>
+                </a>
+            </div>
+                
+        </nav>
+        <div class="section">
+            <div class="container" id="app">
+                <p>ID: {{ uuid }}</p>
+                <p>Messages Saved: {{ messagesSaved }}</p>
+                <br>
+                <form class="form-horizontal" >
+                    <fieldset>
+                    <!-- Text input-->
+                    <div class="field">
+                        <label class="label" for="emailinput">Email</label>
+                        <div class="control">
+                        <input v-model="name" id="emailinput" name="emailinput" type="text" placeholder="email@email.com" class="input ">
+                        </div>
+                    </div>
+                    
+                    <!-- Text input-->
+                    <div class="field">
+                        <label class="label" for="nameinput">Name</label>
+                        <div class="control">
+                        <input v-model="email" id="nameinput" name="nameinput" type="text" placeholder="John Smith" class="input ">
+                        </div>
+                    </div>
+                    
+                    <!-- Text input-->
+                    <div class="field">
+                        <label class="label" for="phone">Phone</label>
+                        <div class="control">
+                        <input v-model="phone" id="phone" name="phone" type="text" placeholder="(518) 555-5555" class="input ">
+                        </div>
+                    </div>
+                    
+                    <!-- Button -->
+                    <div class="field">
+                        <div class="control">
+                        <button @click.prevent="postInfo" id="submit" name="submit" class="button is-primary">Submit</button>
+                        </div>
+                    </div>
+                    
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+        <script src="/app.js"></script>
     </body>
+
 </html>

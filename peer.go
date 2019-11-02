@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -25,9 +24,9 @@ func RegisterService(myUuid uuid.UUID, port int) {
 			panic(err)
 		}
 		defer server.Shutdown()
-		fmt.Println("hosting", port)
+		log.Info("Registering Service on ", port)
 		// Clean exit.
-		<-time.After(time.Second * 5000)
+		<-time.After(time.Second * 50000)
 		log.Println("Shutting down.")
 	}
 }
