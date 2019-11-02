@@ -3,6 +3,7 @@ module github.com/jlyon1/disasterpeer
 go 1.12
 
 require (
+	github.com/asdine/storm v2.1.2+incompatible
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/google/uuid v1.1.1

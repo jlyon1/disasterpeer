@@ -14,6 +14,7 @@ type API struct {
 	listenURL string
 	router    chi.Router
 	UUID      uuid.UUID
+	s         *Store
 }
 
 // NewServer ...
@@ -47,3 +48,6 @@ func (a *API) Serve() {
 		log.WithError(err).Error("Unable to serve.")
 	}
 }
+
+// func (a *API) GetMessageHandler() []byte {
+// }
