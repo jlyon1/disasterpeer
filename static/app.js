@@ -8,10 +8,31 @@ new Vue({
       messagesSaved: 0,
       name: "me",
       email: "me@example.com",
-      phone: "555 555 5555"
+      phone: "555 555 5555",
+      lat: -1,
+      long: -1,
+      locAvail: false,
+      locationUpdates: 0
     };
   },
   mounted() {
+    if (window.navigator !== undefined) {
+      this.locAvail = true
+    }
+    let el = this;
+    navigator.geolocation.getCurrentPosition(function(position) {
+      el.lat = position.coords.latitude;
+      el.long = position.coords.longitude;
+      el.locationUpdates++;
+      el.postInfo()
+    });
+    navigator.geolocation.watchPosition(function(position) {
+      el.lat = position.coords.latitude;
+      el.long = position.coords.longitude;
+      el.locationUpdates++;
+      el.postInfo()
+    });
+
     fetch("/uuid")
       .then(data => {
         return data.text();
@@ -35,7 +56,9 @@ new Vue({
         body: JSON.stringify({
           name: this.name,
           email: this.email,
-          phone: this.phone
+          phone: this.phone,
+          lat: this.lat,
+          long: this.long
         })
       });
     },

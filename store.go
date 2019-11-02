@@ -132,16 +132,10 @@ type EncryptedMessage struct {
 }
 
 // TODO: Throw away old id from
-func (s *Store) SaveMessages(msg []byte) {
-	bytes := []byte(msg)
-	var messages []EncryptedMessage
-	err := json.Unmarshal(bytes, &messages)
-	if err != nil {
-		log.Panicln("couldn't unmarshal message")
-	}
-
+func (s *Store) SaveMessages(messages []EncryptedMessage) {
 	for _, m := range messages {
-		if err = s.db.Save(&m); err != nil {
+		m.ID = 0
+		if err := s.db.Save(&m); err != nil {
 			log.Panicln("message error")
 		}
 	}

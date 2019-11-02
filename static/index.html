@@ -14,8 +14,10 @@
         </nav>
         <div class="section">
             <div class="container" id="app">
+                <p class="has-text-danger" v-if="!locAvail">No location services</p>
                 <p>ID: {{ uuid }}</p>
                 <p>Messages Saved: {{ messagesSaved }}</p>
+                <p>Location records: {{ locationUpdates }}</p>
                 <br>
                 <form class="form-horizontal" >
                     <fieldset>
