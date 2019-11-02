@@ -50,13 +50,14 @@ func NewStore() (*Store, error) {
 // }
 
 type MyInfo struct {
-	ID    uuid.UUID // user ID
-	Name  string
-	Email string
-	Phone string
-	Lat   float64
-	Long  float64
-	Time  time.Time
+	ID     int       `storm:"id,increment"`
+	UserID uuid.UUID // user ID
+	Name   string
+	Email  string
+	Phone  string
+	Lat    float64
+	Long   float64
+	Time   time.Time
 	// Meta  MetaImages
 }
 
@@ -65,7 +66,26 @@ func (s *Store) SetMyInfo(info *MyInfo) error {
 }
 
 func (s *Store) UpdateLocation(myID uuid.UUID, newLat float64, newLong float64) error {
-	return s.db.Update(&MyInfo{ID: myID, Lat: newLat, Long: newLong, Time: time.Now()})
+	var myInfo MyInfo
+	err := s.db.One("UserID", myID, &myInfo)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// fmt.Println(myInfo)
+
+	newInfo := MyInfo{
+		UserID: myInfo.UserID,
+		Name:   myInfo.Name,
+		Email:  myInfo.Email,
+		Phone:  myInfo.Phone,
+		Lat:    newLat,
+		Long:   newLong,
+		Time:   time.Now(),
+	}
+
+	return s.db.Save(&newInfo)
+
 }
 
 type EncryptedMessage struct {
@@ -74,7 +94,7 @@ type EncryptedMessage struct {
 	Body []byte
 }
 
-// Throw away old id from
+// TODO: Throw away old id from
 func (s *Store) SaveMessages(msg []byte) {
 	bytes := []byte(msg)
 	var messages []EncryptedMessage
@@ -97,10 +117,6 @@ func (s *Store) GetAllMessages(myID uuid.UUID) []byte {
 
 	// Append user's most recent info onto encrypted messages
 	rng := rand.Reader
-
-	var myInfo MyInfo
-	bodyString, err := json.Marshal(s.db.One("UUID", myID, &myInfo))
-
 	pub, err := ioutil.ReadFile("key.pem")
 	if err != nil {
 		fmt.Println(err)
@@ -118,13 +134,23 @@ func (s *Store) GetAllMessages(myID uuid.UUID) []byte {
 		log.Panicln("Unable to parse RSA public key, generating a temp one")
 	}
 
-	body, _ := rsa.EncryptOAEP(sha256.New(), rng, pubKey, bodyString, []byte(myID.String()))
-	newMessage := EncryptedMessage{
-		Sent: time.Now(),
-		Body: body,
-	}
+	var info []MyInfo
+	s.db.All(&info)
 
-	messages = append(messages, newMessage)
+	for _, myInfo := range info {
+		bodyString, err := json.Marshal(&myInfo)
+		fmt.Println(string(bodyString))
+
+		if err != nil {
+			fmt.Println(err)
+		}
+		body, _ := rsa.EncryptOAEP(sha256.New(), rng, pubKey, bodyString, []byte(myID.String()))
+		newMessage := EncryptedMessage{
+			Sent: time.Now(),
+			Body: body,
+		}
+		messages = append(messages, newMessage)
+	}
 
 	// Marshal messages
 	bytes, err := json.Marshal(messages)
