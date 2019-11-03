@@ -76,7 +76,7 @@ func (a *API) UpdateMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	priv, err := ioutil.ReadFile("../mykey.pem")
+	priv, err := ioutil.ReadFile("mykey.pem")
 	if err != nil {
 		log.WithError(err)
 		panic(err)
