@@ -37,6 +37,7 @@ type Info struct {
 	Lat    float64
 	Long   float64
 	Time   time.Time
+	Status string
 	// Meta  MetaImages
 }
 
@@ -110,7 +111,7 @@ func (a *API) UpdateMessages(w http.ResponseWriter, r *http.Request) {
 	}
 	_ = ioutil.WriteFile("data.json", file, 0644)
 
-	w.WriteHeader(400)
+	w.WriteHeader(200)
 }
 
 func NewServer(l string, p string) *API {

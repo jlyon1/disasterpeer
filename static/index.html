@@ -44,6 +44,18 @@
                         <input v-model="phone" id="phone" name="phone" type="text" placeholder="(518) 555-5555" class="input ">
                         </div>
                     </div>
+
+                    <!-- Radio button-->
+                    <div class="field">
+                        <label class="label" for="status">Status</label>
+                        <div class="control">
+                        <input v-model="status" id="safe" value="safe" name="status" type="radio">
+                        <label for="safe">I'm safe</label>
+                        <br>
+                        <input v-model="status" id="distress" value="distress" name="status" type="radio">
+                        <label for="distress">I need help</label>
+                        </div>
+                    </div>
                     
                     <!-- Button -->
                     <div class="field">

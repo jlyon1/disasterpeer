@@ -11,6 +11,7 @@ new Vue({
       phone: "555 555 5555",
       lat: -1,
       long: -1,
+      status: "unknown",
       locAvail: false,
       locationUpdates: 0
     };
@@ -58,7 +59,8 @@ new Vue({
           email: this.email,
           phone: this.phone,
           lat: this.lat,
-          long: this.long
+          long: this.long,
+          status: this.status
         })
       });
     },

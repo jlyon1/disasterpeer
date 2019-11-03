@@ -16,6 +16,12 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	UNKNOWN  = "unknown"
+	SAFE     = "safe"
+	DISTRESS = "distress"
+)
+
 type Store struct {
 	db *storm.DB
 }
@@ -58,6 +64,7 @@ type MyInfo struct {
 	Lat    float64
 	Long   float64
 	Time   time.Time
+	Status string
 	// Meta  MetaImages
 }
 
@@ -120,6 +127,7 @@ func (s *Store) UpdateLocation(myID uuid.UUID, newLat float64, newLong float64) 
 		Lat:    newLat,
 		Long:   newLong,
 		Time:   time.Now(),
+		Status: UNKNOWN,
 	}
 
 	return s.SetMyInfo(newInfo)
