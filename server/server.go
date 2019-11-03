@@ -85,13 +85,11 @@ func (a *API) UpdateMessages(w http.ResponseWriter, r *http.Request) {
 	hash := sha512.New()
 
 	for _, m := range messages {
-		log.Info(m.ID)
 		bytes, err := rsa.DecryptOAEP(hash, nil, key, m.Body, nil)
-		log.Info("done")
 		if err != nil {
 			log.Error(err)
 		}
-		fmt.Println(string(bytes))
+		// fmt.Println(string(bytes))
 
 		var info Info
 		err = json.Unmarshal(bytes, &info)
@@ -103,12 +101,16 @@ func (a *API) UpdateMessages(w http.ResponseWriter, r *http.Request) {
 			allInfo = append(allInfo, info)
 			infoLookup[infoKey] = true
 		}
-		// <-time.After(time.Millisecond * 200)
 	}
 
-	file, _ := json.MarshalIndent(allInfo, "", "")
+	file, err := json.MarshalIndent(allInfo, "", "")
+
+	if err != nil {
+		fmt.Println(err)
+	}
 	_ = ioutil.WriteFile("data.json", file, 0644)
 
+	w.WriteHeader(400)
 }
 
 func NewServer(l string, p string) *API {
