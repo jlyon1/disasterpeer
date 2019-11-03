@@ -4,13 +4,14 @@ import matplotlib as mpl
 mpl.use('TkAgg')
 mpl.rcParams['figure.dpi']= 300
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 import cv2
 import json
 
 
 
 '''
-Troy population- 49374
+Troy population- 49874
 find centers of districts with distance to border 
     or pick n centers
 assign population to districts
@@ -18,7 +19,7 @@ assign population to districts
     for each person in a district, generate their distance from center with a Gaussian
 
 distribution
-49374
+49874
 downtown        8174
 the hill        8000
 south central   7500
@@ -27,7 +28,11 @@ Eastside        6700
 Sycaway         6000
 Lansingburgh    4000
 Frear park      2000
+North Central   500
 '''
+
+# TODO: add axes
+#
 
 class Event:
     def __init__(self, uid, status, time, xloc, yloc):
@@ -47,6 +52,16 @@ class City:
 
         for dname in self.districts:
             self.districts[dname].plotPop()
+
+        #Add legend
+        green_patch = mpatches.Patch(color='green', label='Unknown')
+        blue_patch = mpatches.Patch(color='blue', label='Safe')
+        red_patch = mpatches.Patch(color='red', label='Distressed')
+        black_patch = mpatches.Patch(color='black', label='Deceased')
+
+        lines = [green_patch, blue_patch, red_patch, black_patch]
+        labels = [line.get_label() for line in lines]
+        plt.legend(lines, labels, loc = 'upper left', fontsize = 'xx-small')
         
         #should clear plt
         #plt.show()
@@ -119,8 +134,12 @@ class District:
             if event.uid in self.safeUID:
                 self.safeUID.remove(event.uid)
 
+        elif event.status == 'unknown':
+            #intentionally ignoring this update
+            pass
+
         else:
-            print('ERROR: status {} not recognized, must be one of deceased, safe, distress'.format(event.status))
+            print('ERROR: status {} not recognized, must be one of deceased, safe, distress, unknown'.format(event.status))
 
 
         if self.unknownCount == 0:
@@ -138,7 +157,6 @@ def makeDistricts(districts):
 if __name__ == '__main__':
     im = cv2.imread('troy.png', cv2.IMREAD_GRAYSCALE)
     im = np.stack((im,)*3, axis=-1)
-    #plt.imshow(im)
 
     with open('districts.json') as jf:
         districts = makeDistricts(json.load(jf))
