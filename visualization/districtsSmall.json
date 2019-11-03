@@ -1,0 +1,49 @@
+{ 
+    "South Troy":{ 
+       "pop":0,
+       "center":[500, 2150],
+       "covar":[[4000, 0],[0,4000]]
+    },
+    "Downtown":{ 
+       "pop":1,
+       "center":[470, 1560],
+       "covar":[[200, 0],[0,200]]
+    },
+    "The Hill":{ 
+       "pop":1,
+       "center":[660,1548],
+       "covar":[[800, 0],[0,800]]
+    },
+    "South Central":{ 
+       "pop":0,
+       "center":[408,1740],
+       "covar":[[200, 0],[0,200]]
+    },
+    "Eastside":{ 
+       "pop":2,
+       "center": [924,1938],
+       "covar":[[1000, 0],[0,1000]]
+    },
+    "Sycaway":{ 
+       "pop":0,
+       "center": [890,1564],
+       "covar":[[1000, 0],[0,1000]]
+    },
+    "Lansingburgh":{ 
+       "pop":0,
+       "center":[721,759],
+       "covar":[[1400, 0],[0,1400]]
+    },
+    "Frear park":{ 
+       "pop":0,
+       "center":[818,1220],
+       "covar":[[1000, 0],[0,1000]]
+    },
+    "North Central":{
+        "pop":0,
+        "center":[598,1170],
+        "covar":[[400, 0],[0,400]]
+    }
+    
+ }
+ 
