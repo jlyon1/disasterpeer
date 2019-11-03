@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha512"
 	"crypto/x509"
@@ -46,16 +45,6 @@ type InfoSet map[string]bool
 var infoLookup InfoSet
 var allInfo []Info
 
-// DecryptWithPrivateKey decrypts data with private key
-func DecryptWithPrivateKey(ciphertext []byte, priv *rsa.PrivateKey) []byte {
-	hash := sha512.New()
-	plaintext, err := rsa.DecryptOAEP(hash, rand.Reader, priv, ciphertext, nil)
-	if err != nil {
-		log.Error(err)
-	}
-	return plaintext
-}
-
 // BytesToPrivateKey bytes to private key
 func BytesToPrivateKey(priv []byte) *rsa.PrivateKey {
 	block, _ := pem.Decode(priv)
@@ -93,22 +82,28 @@ func (a *API) UpdateMessages(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 	key := BytesToPrivateKey(priv)
+	hash := sha512.New()
 
 	for _, m := range messages {
-		bytes := DecryptWithPrivateKey(m.Body, key)
+		log.Info(m.ID)
+		bytes, err := rsa.DecryptOAEP(hash, nil, key, m.Body, nil)
+		log.Info("done")
+		if err != nil {
+			log.Error(err)
+		}
 		fmt.Println(string(bytes))
 
 		var info Info
-		err := json.Unmarshal(bytes, &info)
+		err = json.Unmarshal(bytes, &info)
 		if err != nil {
 			fmt.Println(err)
 		}
-
 		infoKey := info.UserID.String() + info.Time.String()
 		if !infoLookup[infoKey] {
 			allInfo = append(allInfo, info)
 			infoLookup[infoKey] = true
 		}
+		// <-time.After(time.Millisecond * 200)
 	}
 
 	file, _ := json.MarshalIndent(allInfo, "", "")
