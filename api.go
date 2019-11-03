@@ -94,6 +94,7 @@ func (a *API) PostMyInfo(w http.ResponseWriter, r *http.Request) {
 		Lat:    tmp.Lat,
 		Long:   tmp.Long,
 		Time:   time.Now(),
+		Status: tmp.Status,
 	})
 	if err != nil {
 		fmt.Println(err)
