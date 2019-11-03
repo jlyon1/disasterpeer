@@ -122,9 +122,20 @@ func NewServer(l string, p string) *API {
 	}
 	r := chi.NewRouter()
 	r.Post("/update", a.UpdateMessages)
+	r.Get("/update", a.GetDataJSON)
 	a.router = r
 
 	return a
+}
+
+func (a *API) GetDataJSON(w http.ResponseWriter, r *http.Request) {
+	f, err := ioutil.ReadFile("data.json")
+	if err != nil {
+		w.WriteHeader(404)
+		return
+	}
+	w.Write(f)
+
 }
 
 // Serve ...
@@ -133,4 +144,14 @@ func (a *API) Serve() {
 	if err := http.ListenAndServe(a.listenURL+":"+a.port, a.router); err != nil {
 		log.WithError(err).Error("Unable to serve.")
 	}
+}
+func WriteJSON(w http.ResponseWriter, data interface{}) error {
+	w.Header().Set("Content-Type", "application/json")
+	b, err := json.MarshalIndent(data, "", " ")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	w.Write(b)
+	return nil
 }
