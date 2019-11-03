@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"net"
 	"time"
 
 	"github.com/google/uuid"
@@ -11,7 +12,7 @@ import (
 
 // Peer represents a peer to communicate with
 type Peer struct {
-	IP   string
+	IPS  []net.IP
 	UUID string
 	Port int
 }
@@ -19,6 +20,7 @@ type Peer struct {
 // RegisterService registers the peer on zeroconf
 func RegisterService(myUuid uuid.UUID, port int) {
 	for {
+		<-time.After(time.Second * 5)
 		server, err := zeroconf.Register(myUuid.String(), "_disasterpeer._tcp", "local.", port, nil, nil)
 		if err != nil {
 			panic(err)
@@ -26,7 +28,7 @@ func RegisterService(myUuid uuid.UUID, port int) {
 		defer server.Shutdown()
 		log.Info("Registering Service on ", port)
 		// Clean exit.
-		<-time.After(time.Second * 50000)
+		<-time.After(time.Second * 50)
 		log.Println("Shutting down.")
 	}
 }
@@ -43,11 +45,13 @@ func FindPeers(peerChan chan Peer) {
 	if err != nil {
 		log.Fatalln("Failed to browse:", err.Error())
 	}
+
 	for {
 		select {
 		case entry := <-entries:
+
 			peerChan <- Peer{
-				IP:   entry.HostName,
+				IPS:  entry.AddrIPv4,
 				UUID: entry.Instance,
 				Port: entry.Port,
 			}
