@@ -57,9 +57,12 @@ func main() {
 		select {
 		case peer := <-peerChan:
 			peerList = append(peerList, peer)
-		case <-time.Tick(time.Second):
+		case <-time.Tick(time.Second * 5):
 			var npl []Peer
 			for _, p := range peerList {
+				if p.UUID == id.String() {
+					continue
+				}
 				resp, err := http.Get("http://" + p.IP + ":" + strconv.Itoa(p.Port) + "/messages")
 
 				if err != nil {
@@ -76,8 +79,25 @@ func main() {
 						npl = append(npl, p)
 						var encMessages []EncryptedMessage
 						json.Unmarshal(bodyBytes, &encMessages)
-						fmt.Println("Got ", len(encMessages), " Messages")
-
+						myMessages := s.GetAllMessages(id)
+						var totMessages []EncryptedMessage
+						for _, msg := range encMessages {
+							found := false
+							for _, msg2 := range myMessages {
+								if string(msg.Body) == string(msg2.Body) {
+									found = true
+									break
+								}
+							}
+							if !found {
+								totMessages = append(totMessages, msg)
+							}
+						}
+						if len(totMessages) == 0 {
+							continue
+						}
+						fmt.Println("Got ", len(totMessages), " New Messages")
+						s.SaveMessages(totMessages)
 					}
 				}
 			}
